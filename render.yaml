@@ -8,6 +8,10 @@ services:
     envVars:
       - key: OPENAI_API_KEY
         sync: false
+      - key: APP_PASSWORD
+        sync: false
+      - key: APP_USERNAME
+        value: docintel
       - key: LLM_MODEL
         value: gpt-4o-mini
       - key: EMBEDDING_MODEL
