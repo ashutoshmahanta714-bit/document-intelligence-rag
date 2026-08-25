@@ -59,6 +59,8 @@ Edit `.env` and replace only the placeholder value:
 
 ```env
 OPENAI_API_KEY=your_real_key
+APP_USERNAME=docintel
+APP_PASSWORD=choose_a_private_demo_password
 LLM_MODEL=gpt-4o-mini
 EMBEDDING_MODEL=text-embedding-3-small
 VITE_API_URL=http://localhost:8000
@@ -100,10 +102,13 @@ After these files are on `main`:
 2. Click **New +** and choose **Blueprint**.
 3. Connect GitHub and select `ashutoshmahanta714-bit/document-intelligence-rag`.
 4. Render reads `render.yaml`.
-5. When prompted for `OPENAI_API_KEY`, paste the key into Render's secret field.
+5. Enter the two secret values when Render prompts you:
+   - `OPENAI_API_KEY`: paste your OpenAI API key.
+   - `APP_PASSWORD`: choose a new private password for this demo. Do not reuse your GitHub or email password.
 6. Create the Blueprint and wait for the deploy to become **Live**.
 7. Open the generated `onrender.com` URL.
-8. Upload a small text or PDF file and ask a question whose answer appears in that file.
+8. When the browser asks for credentials, use username `docintel` and the `APP_PASSWORD` you chose.
+9. Upload a small text or PDF file and ask a question whose answer appears in that file.
 
 ### Free-tier limitation
 
@@ -133,7 +138,8 @@ Mount the disk at `/var/data`.
 ## Important limitations
 
 - No authentication or per-user document isolation.
-- Anyone with the public URL can upload documents and make API calls charged to the configured OpenAI account.
+- The demo uses HTTP Basic authentication; keep `APP_PASSWORD` private.
+- OpenAI API usage is billed to the account that owns `OPENAI_API_KEY`.
 - The free Render filesystem is temporary.
 - Scanned PDFs need OCR before indexing.
 - This is a learning demo, not a production service.
