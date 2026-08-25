@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import Upload from "./components/Upload";
-import Chat from "./components/Chat";
-import Documents from "./components/Documents";
+import Upload from "./Upload";
+import Chat from "./Chat";
+import Documents from "./Documents";
 import "./App.css";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
