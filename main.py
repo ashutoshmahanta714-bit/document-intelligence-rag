@@ -1,8 +1,12 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import Response
 from pydantic import BaseModel, Field
+import base64
+import binascii
 import os
+import secrets
 import shutil
 import uuid
 from pathlib import Path
@@ -14,6 +18,51 @@ from rag_engine import RAGEngine
 BASE_DIR = Path(__file__).resolve().parent
 
 app = FastAPI(title="Document Intelligence RAG API", version="1.1.0")
+
+
+def unauthorized_response() -> Response:
+    return Response(
+        content="Authentication required",
+        status_code=401,
+        headers={"WWW-Authenticate": 'Basic realm="DocIntel Demo"'},
+    )
+
+
+@app.middleware("http")
+async def require_demo_password(request, call_next):
+    """Protect the public demo without exposing the OpenAI key to the browser."""
+    password = os.getenv("APP_PASSWORD")
+    if not password or request.url.path == "/health":
+        return await call_next(request)
+
+    authorization = request.headers.get("Authorization", "")
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "basic" or not token:
+        return unauthorized_response()
+
+    try:
+        decoded = base64.b64decode(token, validate=True).decode("utf-8")
+    except (binascii.Error, UnicodeDecodeError):
+        return unauthorized_response()
+
+    supplied_username, separator, supplied_password = decoded.partition(":")
+    expected_username = os.getenv("APP_USERNAME", "docintel")
+    if not separator:
+        return unauthorized_response()
+
+    username_matches = secrets.compare_digest(
+        supplied_username.encode("utf-8"),
+        expected_username.encode("utf-8"),
+    )
+    password_matches = secrets.compare_digest(
+        supplied_password.encode("utf-8"),
+        password.encode("utf-8"),
+    )
+    if not (username_matches and password_matches):
+        return unauthorized_response()
+
+    return await call_next(request)
+
 
 cors_origins = [
     origin.strip()
