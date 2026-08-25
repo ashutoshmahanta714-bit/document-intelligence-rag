@@ -11,6 +11,10 @@ import chromadb
 from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
 from openai import OpenAI
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 class RAGEngine:
