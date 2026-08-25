@@ -1,105 +1,39 @@
-# DocIntel — Document Intelligence RAG System
+# DocIntel — Document Intelligence RAG Demo
 
-A full-stack Retrieval-Augmented Generation application that lets users upload documents and ask grounded questions about their contents.
+A full-stack learning demo that accepts documents and answers questions using retrieval-augmented generation (RAG).
 
-[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-API-009688)](https://fastapi.tiangolo.com/)
-[![React](https://img.shields.io/badge/React-18-61DAFB)](https://react.dev/)
-[![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector%20Store-orange)](https://www.trychroma.com/)
+> **Learning status:** This repository is being used to study and deploy a RAG application. It is not currently presented as original portfolio work. Understand and rebuild the components before claiming authorship in applications or interviews.
 
-## Recruiter Snapshot
+## What it does
 
-| Area | Implementation |
-|---|---|
-| Problem | Find answers inside user-provided documents without manually searching every file |
-| Data pipeline | Parse → clean → chunk with overlap → embed → persist |
-| Retrieval | Sentence-transformer embeddings with ChromaDB cosine similarity |
-| Generation | LLM answer constrained by retrieved context |
-| Backend | FastAPI endpoints for upload, query, listing, deletion, and health checks |
-| Frontend | React/Vite interface for document upload, chat, sources, and document management |
-| Supported files | PDF, DOCX, TXT, CSV, and Markdown |
+1. Extracts text from PDF, DOCX, TXT, CSV, or Markdown files.
+2. Splits the text into overlapping chunks.
+3. Creates embeddings with OpenAI's `text-embedding-3-small` model.
+4. Stores chunks and embeddings in ChromaDB.
+5. Retrieves relevant chunks for a question.
+6. Generates a grounded answer with `gpt-4o-mini` and displays sources.
 
-## System Flow
-
-```text
-Document upload
-      ↓
-Text extraction and cleaning
-      ↓
-Overlapping text chunks
-      ↓
-Sentence-transformer embeddings
-      ↓
-ChromaDB vector store
-      ↓
-User question → similarity search → retrieved context → LLM answer + sources
-```
-
-## Features
-
-- Upload and index PDF, DOCX, TXT, CSV, and Markdown files.
-- Split text into overlapping chunks for better retrieval coverage.
-- Generate local embeddings with `all-MiniLM-L6-v2`.
-- Persist embeddings and metadata in ChromaDB.
-- Retrieve the most relevant chunks using cosine similarity.
-- Generate grounded answers from retrieved context.
-- Display source names, chunk numbers, relevance scores, and excerpts.
-- List indexed documents and remove them from the vector store.
-- Inspect API health and current vector count.
-
-## Technology Stack
-
-### Data and AI
-
-- Python
-- Pandas
-- Sentence Transformers
-- ChromaDB
-- OpenAI-compatible LLM API
-- PDFPlumber and python-docx
-
-### Application
+## Stack
 
 - FastAPI and Pydantic
-- React 18
-- Vite
-- REST APIs
+- React 18 and Vite
+- ChromaDB
+- OpenAI API
+- PDFPlumber, python-docx, and Pandas
+- Docker
+- Render Blueprint
 
-## Repository Structure
+## Local setup
 
-```text
-.
-├── main.py             # FastAPI application and endpoints
-├── rag_engine.py       # Parsing, chunking, embeddings, retrieval, and generation
-├── requirements.txt    # Python dependencies
-├── App.jsx             # Frontend state and API integration
-├── App.css             # Application styling
-├── Upload.jsx          # File upload component
-├── Chat.jsx            # Chat and source display
-├── Documents.jsx       # Indexed-document management
-├── main.jsx            # React entry point
-├── index.html          # Vite HTML entry
-├── package.json        # Frontend dependencies and scripts
-├── vite.config.js      # Vite development configuration
-└── .env.example        # Safe environment-variable template
-```
-
-## Local Setup
-
-### 1. Clone the repository
+### Backend
 
 ```bash
 git clone https://github.com/ashutoshmahanta714-bit/document-intelligence-rag.git
 cd document-intelligence-rag
-```
-
-### 2. Configure the Python backend
-
-```bash
 python -m venv .venv
 ```
 
-Activate the environment:
+Activate the virtual environment:
 
 ```bash
 # Windows
@@ -109,15 +43,11 @@ Activate the environment:
 source .venv/bin/activate
 ```
 
-Install dependencies:
+Install dependencies and create the local environment file:
 
 ```bash
 pip install -r requirements.txt
-```
 
-Create your local environment file:
-
-```bash
 # macOS/Linux
 cp .env.example .env
 
@@ -125,28 +55,29 @@ cp .env.example .env
 copy .env.example .env
 ```
 
-Then replace the placeholder key in `.env`:
+Edit `.env` and replace only the placeholder value:
 
 ```env
-OPENAI_API_KEY=your_api_key
-LLM_MODEL=gpt-3.5-turbo
+OPENAI_API_KEY=your_real_key
+LLM_MODEL=gpt-4o-mini
+EMBEDDING_MODEL=text-embedding-3-small
 VITE_API_URL=http://localhost:8000
+CHROMA_PATH=./chroma_db
+UPLOAD_DIR=./uploads
+CORS_ORIGINS=http://localhost:5173
 ```
 
-Never commit the real `.env` file.
+Never commit `.env` or paste your API key into GitHub issues, pull requests, screenshots, or frontend code.
 
-### 3. Start the backend
+Start the backend:
 
 ```bash
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-- API: http://localhost:8000
-- Interactive API documentation: http://localhost:8000/docs
+### Frontend
 
-### 4. Start the frontend
-
-Open a second terminal:
+In a second terminal:
 
 ```bash
 npm install
@@ -155,53 +86,54 @@ npm run dev
 
 Open http://localhost:5173.
 
-## API Endpoints
+## Deploy on Render
+
+This repository includes:
+
+- `Dockerfile` to build the React frontend and run FastAPI.
+- `render.yaml` to create a Render web service.
+- A secret placeholder for `OPENAI_API_KEY`; the real key is entered only in Render.
+
+After these files are on `main`:
+
+1. Sign in to [Render](https://dashboard.render.com/).
+2. Click **New +** and choose **Blueprint**.
+3. Connect GitHub and select `ashutoshmahanta714-bit/document-intelligence-rag`.
+4. Render reads `render.yaml`.
+5. When prompted for `OPENAI_API_KEY`, paste the key into Render's secret field.
+6. Create the Blueprint and wait for the deploy to become **Live**.
+7. Open the generated `onrender.com` URL.
+8. Upload a small text or PDF file and ask a question whose answer appears in that file.
+
+### Free-tier limitation
+
+The Blueprint uses Render's free web-service plan for learning. Free services sleep after inactivity and use an ephemeral filesystem. Uploaded files and the ChromaDB index are therefore lost after a restart, redeploy, or sleep cycle.
+
+For permanent storage, change to a paid Render instance and attach a persistent disk, then set:
+
+```env
+CHROMA_PATH=/var/data/chroma_db
+UPLOAD_DIR=/var/data/uploads
+```
+
+Mount the disk at `/var/data`.
+
+## API endpoints
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| `GET` | `/` | API status message |
+| `GET` | `/api/status` | API status |
 | `POST` | `/upload` | Parse and index a document |
 | `POST` | `/query` | Retrieve context and generate an answer |
 | `GET` | `/documents` | List indexed documents |
 | `DELETE` | `/documents/{name}` | Remove a document from the vector store |
-| `GET` | `/health` | Report health, document count, and vector count |
+| `GET` | `/health` | Health and vector-count check |
+| `GET` | `/docs` | Interactive FastAPI API documentation |
 
-Example query:
+## Important limitations
 
-```bash
-curl -X POST http://localhost:8000/query \
-  -H "Content-Type: application/json" \
-  -d "{\"question\":\"What are the main findings?\",\"top_k\":5}"
-```
-
-## Core RAG Decisions
-
-- **Local embeddings:** Sentence Transformers reduces external API calls during indexing.
-- **Persistent vector storage:** ChromaDB keeps indexed content between application restarts.
-- **Chunk overlap:** Overlapping chunks reduce information loss at chunk boundaries.
-- **Grounded prompt:** The model is instructed to answer only from retrieved context.
-- **Retrieval transparency:** Source metadata and excerpts are returned with each answer.
-
-## Current Limitations
-
-- The application is intended for local development and demonstration.
-- Authentication and per-user document isolation are not implemented.
-- Uploaded files are stored locally.
-- Automated tests, evaluation datasets, and production deployment are future improvements.
-- Scanned PDFs require an OCR pipeline before their text can be indexed.
-
-## Roadmap
-
-- Add automated unit and API tests.
-- Add retrieval evaluation metrics such as Precision@K and answer faithfulness.
-- Add OCR support for scanned documents.
-- Add authentication and separate vector collections per user.
-- Containerise the backend and frontend.
-- Deploy a public demo with secure secret management.
-
-## Author
-
-**Ashutosh Mahanta** — Data Science and Machine Learning aspirant with experience in Python, SQL, Scikit-learn, OpenCV, predictive maintenance, and applied AI.
-
-- GitHub: [ashutoshmahanta714-bit](https://github.com/ashutoshmahanta714-bit)
-- Related work: Industrial Motor Fault Detection using Machine Learning and SWIR sensor image processing with OpenCV.
+- No authentication or per-user document isolation.
+- Anyone with the public URL can upload documents and make API calls charged to the configured OpenAI account.
+- The free Render filesystem is temporary.
+- Scanned PDFs need OCR before indexing.
+- This is a learning demo, not a production service.
