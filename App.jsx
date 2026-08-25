@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Upload from "./Upload";
 import Chat from "./Chat";
 import Documents from "./Documents";
 import "./App.css";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
 export default function App() {
   const [documents, setDocuments] = useState([]);
@@ -15,10 +15,11 @@ export default function App() {
   const fetchDocuments = async () => {
     try {
       const res = await fetch(`${API_BASE}/documents`);
+      if (!res.ok) throw new Error("Failed to load documents");
       const data = await res.json();
       setDocuments(data.documents || []);
-    } catch (e) {
-      console.error("Failed to fetch documents", e);
+    } catch (error) {
+      console.error("Failed to fetch documents", error);
     }
   };
 
@@ -28,7 +29,7 @@ export default function App() {
 
   const handleQuery = async (question) => {
     const userMsg = { role: "user", content: question, id: Date.now() };
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages((previous) => [...previous, userMsg]);
     setIsQuerying(true);
 
     try {
@@ -38,19 +39,22 @@ export default function App() {
         body: JSON.stringify({ question, top_k: 5 }),
       });
       const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || "The query failed");
+      }
       const botMsg = {
         role: "assistant",
         content: data.answer,
         sources: data.sources || [],
         id: Date.now() + 1,
       };
-      setMessages((prev) => [...prev, botMsg]);
-    } catch (e) {
-      setMessages((prev) => [
-        ...prev,
+      setMessages((previous) => [...previous, botMsg]);
+    } catch (error) {
+      setMessages((previous) => [
+        ...previous,
         {
           role: "assistant",
-          content: "⚠️ Failed to connect to the backend. Make sure the server is running.",
+          content: `⚠️ ${error.message || "Failed to connect to the backend."}`,
           sources: [],
           id: Date.now() + 1,
         },
